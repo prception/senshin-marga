@@ -1,0 +1,18 @@
+/* TEAM */
+
+Company: Senshin Marga
+Tagline: Where Language Meets Culture.
+Contact: operations@miraisetu.in
+Location: Bengaluru, Karnataka, India
+
+/* SITE */
+
+Last updated: 2026-06-24
+Language: English / Japanese
+Standards: HTML5, CSS3
+Website by: PRception (https://prception.in/)
+
+                  /\
+                 /  \      Senshin Marga
+                /    \     先進の道
+               /______\
