@@ -88,6 +88,10 @@
       --sans: "Inter", Arial, sans-serif;
       --jp: "Noto Serif JP", "Yu Mincho", serif;
       --display: "Anton", "Inter", Arial, sans-serif;
+      /* Single source of truth for body / paragraph copy size, used site-wide
+         so every section's body text matches. UI chrome (nav, buttons, labels,
+         stats, headings, and the larger intro .lead) keep their own sizes. */
+      --body: 0.86rem;
     }
 
     * { box-sizing: border-box; }
@@ -423,7 +427,7 @@
     .hero-foot-left p {
       margin: 0;
       color: rgba(43, 43, 43, 0.72);
-      font-size: 0.86rem;
+      font-size: var(--body);
       line-height: 1.55;
     }
 
@@ -457,7 +461,7 @@
     .hero-foot-main p {
       margin: 0;
       color: rgba(43, 43, 43, 0.78);
-      font-size: 0.96rem;
+      font-size: var(--body);
     }
 
     /* Right column: a single vertical list of thumbnail + title + copy
@@ -500,7 +504,7 @@
     .hero-feat p {
       margin: 0;
       color: rgba(43, 43, 43, 0.68);
-      font-size: 0.86rem;
+      font-size: var(--body);
       line-height: 1.5;
     }
 
@@ -584,7 +588,7 @@
       gap: 18px;
     }
 
-    .section-copy p { margin: 0; color: rgba(43, 43, 43, 0.78); }
+    .section-copy p { margin: 0; color: rgba(43, 43, 43, 0.78); font-size: var(--body); }
 
     .editorial-lines {
       display: grid;
@@ -678,7 +682,7 @@
       color: rgba(124, 54, 70, 0.44);
     }
 
-    .card p, .testimonial p { margin: 0; color: rgba(43, 43, 43, 0.74); }
+    .card p, .testimonial p { margin: 0; color: rgba(43, 43, 43, 0.74); font-size: var(--body); }
 
     .why-grid {
       display: grid;
@@ -699,7 +703,7 @@
 
     .reason span { display: none; }
 
-    .reason p { margin: 0; color: rgba(43, 43, 43, 0.73); font-size: 0.94rem; }
+    .reason p { margin: 0; color: rgba(43, 43, 43, 0.73); font-size: var(--body); }
 
     .testimonials { background: linear-gradient(180deg, var(--white), var(--paper)); }
 
@@ -743,7 +747,7 @@
     }
 
     .testimonial p {
-      font-size: 1.02rem;
+      font-size: var(--body);
       line-height: 1.65;
       color: rgba(43, 43, 43, 0.86);
     }
@@ -937,7 +941,7 @@
 
     .footer-intro p {
       margin: 0;
-      font-size: 1.02rem;
+      font-size: var(--body);
       line-height: 1.55;
       color: var(--white);
     }
@@ -1138,11 +1142,10 @@
       width: 100%;
       height: 100%;
       padding: clamp(20px, 3vh, 36px) clamp(22px, 3vw, 38px);
-      /* frosted glass — pale tint so the navy panel doesn't bleed through */
+      /* Solid (fully opaque) frosted-look tint, no backdrop-filter — avoids the
+         live-blur stall and stops the front card revealing the cards behind. */
       background:
-        linear-gradient(150deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.42) 100%);
-      -webkit-backdrop-filter: blur(28px) saturate(150%);
-      backdrop-filter: blur(28px) saturate(150%);
+        linear-gradient(150deg, rgb(236, 241, 249) 0%, rgb(216, 226, 241) 100%);
       border: 1px solid rgba(255, 255, 255, 0.55);
       border-radius: 22px;
       box-shadow:
@@ -1152,13 +1155,13 @@
       align-content: center;
       gap: clamp(8px, 1.4vh, 16px);
       transition: transform 420ms cubic-bezier(.22,.61,.36,1),
-                  opacity 420ms ease, filter 420ms ease;
+                  opacity 420ms ease;
       will-change: transform, opacity;
     }
 
     .fan-card .number { font-size: clamp(1.7rem, 3.4vh, 2.2rem); }
     .fan-card h3 { color: var(--navy); font-size: clamp(1.2rem, 2.4vh, 1.7rem); }
-    .fan-card p { margin: 0; color: rgba(15, 35, 66, 0.82); font-size: clamp(0.84rem, 1.7vh, 0.95rem); }
+    .fan-card p { margin: 0; color: rgba(15, 35, 66, 0.82); font-size: var(--body); }
 
     .fan-tags {
       display: flex;
@@ -1187,22 +1190,31 @@
       opacity: 1;
       z-index: 3;
     }
+    .fan-card.is-left,
+    .fan-card.is-right,
+    .fan-card.is-hidden-left,
+    .fan-card.is-hidden-right {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
     .fan-card.is-left {
       transform: translate(-46%, 0) scale(0.9);
-      opacity: 1;
+      opacity: 0.92;
       z-index: 2;
     }
     .fan-card.is-right {
       transform: translate(46%, 0) scale(0.9);
-      opacity: 1;
+      opacity: 0.92;
       z-index: 2;
     }
-    .fan-card.is-hidden {
-      transform: translate(0, 0) scale(0.82);
+    .fan-card.is-hidden-left,
+    .fan-card.is-hidden-right {
       opacity: 0;
       pointer-events: none;
       z-index: 1;
     }
+    .fan-card.is-hidden-left { transform: translate(-92%, 0) scale(0.82); }
+    .fan-card.is-hidden-right { transform: translate(92%, 0) scale(0.82); }
 
     /* Carousel controls (arrows + dots), mirroring the reference. */
     .fan-controls {
@@ -1243,13 +1255,13 @@
       padding: 0;
       border-radius: 999px;
       border: 0;
-      background: rgba(15, 35, 66, 0.28);
+      background: rgba(255, 255, 255, 0.4);
       cursor: pointer;
       transition: background 160ms ease, transform 160ms ease;
     }
 
     .fan-dot.active {
-      background: var(--burgundy);
+      background: #ffffff;
       transform: scale(1.25);
     }
 
@@ -1429,7 +1441,7 @@
     .svc-text p {
       margin: 0;
       color: rgba(43, 43, 43, 0.74);
-      font-size: clamp(0.82rem, 0.5vw + 0.6vh, 0.92rem);
+      font-size: var(--body);
       line-height: 1.45;
     }
 
@@ -1579,7 +1591,7 @@
       letter-spacing: 0.01em;
     }
 
-    .step p { margin: 0; color: rgba(43, 43, 43, 0.76); }
+    .step p { margin: 0; color: rgba(43, 43, 43, 0.76); font-size: var(--body); }
 
     /* ---- FAQ ---- */
     .faq-list {
@@ -1626,7 +1638,7 @@
     .faq-a p {
       margin: 0;
       padding: 0 0 22px;
-      font-size: 0.94rem;
+      font-size: var(--body);
       color: var(--ink);
     }
 
@@ -2114,7 +2126,7 @@
       position: absolute;
       inset: 0;
       z-index: -2;
-      background-image: url("https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=2200&q=80");
+      background-image: url("https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=2200&q=80");
       background-size: cover;
       background-position: center;
     }
@@ -2168,7 +2180,7 @@
     }
 
     .num-item h3 { margin-bottom: 8px; font-size: clamp(1.15rem, 1.6vw, 1.5rem); }
-    .num-item p { margin: 0; color: rgba(43, 43, 43, 0.72); font-size: 0.96rem; }
+    .num-item p { margin: 0; color: rgba(43, 43, 43, 0.72); font-size: var(--body); }
 
     /* --- Professional team: full-bleed band with a row of portraits --- */
     .team { background: var(--paper); }
@@ -2227,7 +2239,7 @@
     }
     .svc-cols > h2 { font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.0; }
     .svc-col h3 { font-size: 1.05rem; margin-bottom: 14px; }
-    .svc-col p { margin: 0 0 18px; color: rgba(43, 43, 43, 0.7); font-size: 0.9rem; line-height: 1.55; }
+    .svc-col p { margin: 0 0 18px; color: rgba(43, 43, 43, 0.7); font-size: var(--body); line-height: 1.55; }
     .svc-col p:last-child { margin-bottom: 0; }
 
     @media (max-width: 900px) {

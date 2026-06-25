@@ -16,6 +16,10 @@
       --sans: "Inter", Arial, sans-serif;
       --jp: "Noto Serif JP", "Yu Mincho", serif;
       --display: "Anton", "Inter", Arial, sans-serif;
+      /* Single source of truth for body / paragraph copy size, used site-wide
+         so every section's body text matches. UI chrome (nav, buttons, labels,
+         stats, headings, and the larger intro .lead) keep their own sizes. */
+      --body: 0.86rem;
     }
 
     * { box-sizing: border-box; }
@@ -351,7 +355,7 @@
     .hero-foot-left p {
       margin: 0;
       color: rgba(43, 43, 43, 0.72);
-      font-size: 0.86rem;
+      font-size: var(--body);
       line-height: 1.55;
     }
 
@@ -385,7 +389,7 @@
     .hero-foot-main p {
       margin: 0;
       color: rgba(43, 43, 43, 0.78);
-      font-size: 0.96rem;
+      font-size: var(--body);
     }
 
     /* Right column: a single vertical list of thumbnail + title + copy
@@ -428,7 +432,7 @@
     .hero-feat p {
       margin: 0;
       color: rgba(43, 43, 43, 0.68);
-      font-size: 0.86rem;
+      font-size: var(--body);
       line-height: 1.5;
     }
 
@@ -512,7 +516,7 @@
       gap: 18px;
     }
 
-    .section-copy p { margin: 0; color: rgba(43, 43, 43, 0.78); }
+    .section-copy p { margin: 0; color: rgba(43, 43, 43, 0.78); font-size: var(--body); }
 
     .editorial-lines {
       display: grid;
@@ -606,7 +610,7 @@
       color: rgba(124, 54, 70, 0.44);
     }
 
-    .card p, .testimonial p { margin: 0; color: rgba(43, 43, 43, 0.74); }
+    .card p, .testimonial p { margin: 0; color: rgba(43, 43, 43, 0.74); font-size: var(--body); }
 
     .why-grid {
       display: grid;
@@ -627,11 +631,16 @@
 
     .reason span { display: none; }
 
-    .reason p { margin: 0; color: rgba(43, 43, 43, 0.73); font-size: 0.94rem; }
+    .reason p { margin: 0; color: rgba(43, 43, 43, 0.73); font-size: var(--body); }
 
     .testimonials { background: linear-gradient(180deg, var(--white), var(--paper)); }
 
     .testimonials .grid { gap: 20px; }
+
+    /* The carousel arrows are injected by testimonials.js but are only used
+       at phone widths (where the cards become a swipeable carousel). Hide
+       them by default; the mobile breakpoint re-shows them. */
+    .tcarousel-arrow { display: none; }
 
     .testimonial {
       position: relative;
@@ -671,7 +680,7 @@
     }
 
     .testimonial p {
-      font-size: 1.02rem;
+      font-size: var(--body);
       line-height: 1.65;
       color: rgba(43, 43, 43, 0.86);
     }
@@ -865,7 +874,7 @@
 
     .footer-intro p {
       margin: 0;
-      font-size: 1.02rem;
+      font-size: var(--body);
       line-height: 1.55;
       color: var(--white);
     }
@@ -1036,6 +1045,9 @@
       /* horizontal padding matches the hero so the navy panel's left/right
          edges line up exactly with the hero card */
       padding: clamp(14px, 2.5vh, 24px) clamp(6px, 1vw, 12px);
+      /* --fill is driven by scroll (0 = white, 1 = full navy). The panel shape
+         below fades from white to navy as the section enters from above. */
+      --fill: 0;
       background: var(--white);
     }
 
@@ -1058,20 +1070,34 @@
       position: absolute;
       inset: 0;
       z-index: -1;
+      /* Same navy gradient, but each stop is mixed toward white by (1 - --fill)
+         so the whole shape washes white -> blue as the section scrolls in. */
       background:
-        linear-gradient(160deg, #16305c 0%, #0f2342 100%);
+        linear-gradient(160deg,
+          color-mix(in srgb, #16305c calc(var(--fill) * 100%), var(--white)) 0%,
+          color-mix(in srgb, #0f2342 calc(var(--fill) * 100%), var(--white)) 100%);
       border-radius: 44px;
+      transition: background-color 0.15s linear;
       -webkit-clip-path: url(#industryShape);
       clip-path: url(#industryShape);
     }
 
     .industry-panel .section-head { margin-bottom: clamp(10px, 2vh, 24px); }
-    .industry-panel .section-head .kicker { color: rgba(255, 255, 255, 0.7); }
-    .industry-panel .section-head h2 {
-      color: var(--white);
-      font-size: clamp(1.9rem, 4.2vh, 3.4rem);
+    /* Text fades from the navy ink (readable on the white shape) to white as
+       the panel fills, so it stays legible the whole way through. */
+    .industry-panel .section-head .kicker {
+      color: color-mix(in srgb, rgba(255, 255, 255, 0.7) calc(var(--fill) * 100%), #16305c);
+      transition: color 0.15s linear;
     }
-    .industry-panel .section-head .lead { color: rgba(255, 255, 255, 0.78); }
+    .industry-panel .section-head h2 {
+      color: color-mix(in srgb, var(--white) calc(var(--fill) * 100%), #0f2342);
+      font-size: clamp(1.9rem, 4.2vh, 3.4rem);
+      transition: color 0.15s linear;
+    }
+    .industry-panel .section-head .lead {
+      color: color-mix(in srgb, rgba(255, 255, 255, 0.78) calc(var(--fill) * 100%), #16305c);
+      transition: color 0.15s linear;
+    }
 
     /* Overlapping fan of cards, center forward + two fanned behind.
        Grows to fill whatever height is left between heading + controls. */
@@ -1101,11 +1127,11 @@
       width: 100%;
       height: 100%;
       padding: clamp(20px, 3vh, 36px) clamp(22px, 3vw, 38px);
-      /* frosted glass — pale tint so the navy panel doesn't bleed through */
+      /* Solid (fully opaque) frosted-look tint, no backdrop-filter: avoids the
+         live-blur repaint stall AND keeps the front card from showing the
+         cards stacked behind it. */
       background:
-        linear-gradient(150deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.42) 100%);
-      -webkit-backdrop-filter: blur(28px) saturate(150%);
-      backdrop-filter: blur(28px) saturate(150%);
+        linear-gradient(150deg, rgb(236, 241, 249) 0%, rgb(216, 226, 241) 100%);
       border: 1px solid rgba(255, 255, 255, 0.55);
       border-radius: 22px;
       box-shadow:
@@ -1115,13 +1141,13 @@
       align-content: center;
       gap: clamp(8px, 1.4vh, 16px);
       transition: transform 420ms cubic-bezier(.22,.61,.36,1),
-                  opacity 420ms ease, filter 420ms ease;
+                  opacity 420ms ease;
       will-change: transform, opacity;
     }
 
     .fan-card .number { font-size: clamp(1.7rem, 3.4vh, 2.2rem); }
     .fan-card h3 { color: var(--navy); font-size: clamp(1.2rem, 2.4vh, 1.7rem); }
-    .fan-card p { margin: 0; color: rgba(15, 35, 66, 0.82); font-size: clamp(0.84rem, 1.7vh, 0.95rem); }
+    .fan-card p { margin: 0; color: rgba(15, 35, 66, 0.82); font-size: var(--body); }
 
     .fan-tags {
       display: flex;
@@ -1150,21 +1176,36 @@
       opacity: 1;
       z-index: 3;
     }
+    /* Side + hidden cards skip the live blur entirely — only the centered
+       card pays for backdrop-filter, so each 2s tick stays smooth. */
+    .fan-card.is-left,
+    .fan-card.is-right,
+    .fan-card.is-hidden-left,
+    .fan-card.is-hidden-right {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
     .fan-card.is-left {
       transform: translate(-46%, 0) scale(0.9);
-      opacity: 1;
+      opacity: 0.92;
       z-index: 2;
     }
     .fan-card.is-right {
       transform: translate(46%, 0) scale(0.9);
-      opacity: 1;
+      opacity: 0.92;
       z-index: 2;
     }
-    .fan-card.is-hidden {
-      transform: translate(0, 0) scale(0.82);
+    .fan-card.is-hidden-left,
+    .fan-card.is-hidden-right {
       opacity: 0;
       pointer-events: none;
       z-index: 1;
+    }
+    .fan-card.is-hidden-left {
+      transform: translate(-92%, 0) scale(0.82);
+    }
+    .fan-card.is-hidden-right {
+      transform: translate(92%, 0) scale(0.82);
     }
 
     /* Carousel controls (arrows + dots), mirroring the reference. */
@@ -1206,13 +1247,13 @@
       padding: 0;
       border-radius: 999px;
       border: 0;
-      background: rgba(15, 35, 66, 0.28);
+      background: rgba(255, 255, 255, 0.4);
       cursor: pointer;
       transition: background 160ms ease, transform 160ms ease;
     }
 
     .fan-dot.active {
-      background: var(--burgundy);
+      background: #ffffff;
       transform: scale(1.25);
     }
 
@@ -1355,9 +1396,11 @@
        distance below the text in both cards. */
     .svc-4, .svc-5, .svc-7 {
       justify-content: flex-start;
-      gap: clamp(14px, 2vh, 22px);
-      padding: clamp(16px, 2vh, 24px) clamp(18px, 1.4vw, 26px);
+      gap: clamp(10px, 1.4vh, 18px);
+      padding: clamp(14px, 1.6vh, 22px) clamp(18px, 1.4vw, 26px);
     }
+    /* Educational Exchange card has a longer heading; keep EXPLORE visible */
+    .svc-7 { overflow: visible; }
     .svc-4 .svc-head, .svc-5 .svc-head, .svc-7 .svc-head { flex: 0 0 auto; }
     .svc-4 .svc-explore, .svc-5 .svc-explore, .svc-7 .svc-explore {
       margin-top: 0;
@@ -1392,7 +1435,7 @@
     .svc-text p {
       margin: 0;
       color: rgba(43, 43, 43, 0.74);
-      font-size: clamp(0.82rem, 0.5vw + 0.6vh, 0.92rem);
+      font-size: var(--body);
       line-height: 1.45;
     }
 
@@ -1542,7 +1585,7 @@
       letter-spacing: 0.01em;
     }
 
-    .step p { margin: 0; color: rgba(43, 43, 43, 0.76); }
+    .step p { margin: 0; color: rgba(43, 43, 43, 0.76); font-size: var(--body); }
 
     /* ---- FAQ ---- */
     .faq-list {
@@ -1589,7 +1632,7 @@
     .faq-a p {
       margin: 0;
       padding: 0 0 22px;
-      font-size: 0.94rem;
+      font-size: var(--body);
       color: var(--ink);
     }
 
@@ -1930,18 +1973,37 @@
          awkward when the card gets tall/narrow. Drop the clip-path and
          use a plain rounded rectangle; left-align the headline so it no
          longer crowds the right edge on smaller screens. */
-      .hero-card { min-height: min(680px, 86vh); }
+      /* Make the hero fill the viewport on first view (tablet): the photo
+         should read as a full-height cover, not a capped card. Use svh so
+         the card tracks the actual visible viewport. */
+      .hero-card {
+        min-height: 100vh;
+        min-height: 100svh;
+        height: 100svh;
+      }
       .hero-card::before,
       .hero-card::after {
         -webkit-clip-path: none;
         clip-path: none;
         border-radius: 32px;
+        /* Pin the image layers to the largest viewport height so the cover
+           doesn't rescale ("zoom") as the browser toolbar shows/hides. */
+        top: 0;
+        bottom: auto;
+        height: 100lvh;
       }
+      /* Push the toolbar (logo, nav pills, CTA) further down from the top
+         edge now that the card is full-height. */
+      .hero-toolbar { margin-top: clamp(20px, 4vh, 48px); }
       .hero-headline {
         text-align: left;
         align-self: flex-start;
         padding-right: 0;
+        /* Lift the headline up from the very bottom and enlarge it so it
+           anchors the full-height cover. */
+        margin-bottom: clamp(32px, 7vh, 80px);
       }
+      .hero-headline h1 { font-size: clamp(3.4rem, 7.5vw, 5.4rem); }
       .hero-headline .kicker { align-self: start; }
 
       /* Industries: release the locked 100vh height so the fan carousel
@@ -1972,14 +2034,23 @@
       .hero { padding: 0; background: transparent; }
       .hero-card {
         min-height: 100vh;
-        min-height: 100dvh;
-        height: 100dvh;
+        min-height: 100svh;
+        height: 100svh;
         border-radius: 0;
         padding: 20px;
         margin-bottom: 0;
       }
+      /* Pin the image/overlay layers to the LARGEST viewport height (toolbar
+         hidden). They're already sized for the tallest state, so when the
+         browser toolbar slides away on scroll the cover image doesn't grow /
+         rescale — which is what reads as the image "zooming". */
       .hero-card::before,
-      .hero-card::after { border-radius: 0; }
+      .hero-card::after {
+        border-radius: 0;
+        top: 0;
+        bottom: auto;
+        height: 100lvh;
+      }
       .hero-toolbar { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; padding-right: 0; margin-top: 0; }
       .hero-nav { flex-direction: row; align-items: center; gap: 12px; }
       .hero-brand { width: 64px; height: 64px; }
@@ -2015,8 +2086,10 @@
         transition: transform 200ms ease, opacity 180ms ease;
       }
       .hero-pill { text-align: center; padding: 12px 16px; }
-      .hero-headline h1 { font-size: clamp(1.8rem, 7vw, 2.4rem); }
-      .hero-foot { margin-top: 24px; padding: 0 4px; gap: 26px; }
+      .hero-headline { margin-bottom: clamp(40px, 12vh, 96px); }
+      .hero-headline h1 { font-size: clamp(2.6rem, 10vw, 3.5rem); }
+      .hero-headline .rise-line { display: block; text-wrap: balance; }
+      .hero-foot { margin-top: 24px; padding: 0 20px; gap: 26px; }
       .hero-foot-left .left-card { aspect-ratio: 16 / 9; }
       .actions { width: 100%; }
       .button { width: 100%; }
@@ -2024,6 +2097,55 @@
       .why-grid { grid-template-columns: 1fr; }
       .card.featured { grid-column: auto; }
       .card, .reason, .testimonial { min-height: auto; }
+
+      /* Testimonials become a swipeable carousel on phones. */
+      .testimonials .grid {
+        grid-template-columns: none;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 14px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        /* let cards peek past the section padding edges */
+        margin: 0 -20px;
+        padding: 4px 20px 12px;
+      }
+      .testimonials .grid::-webkit-scrollbar { display: none; }
+      .testimonials .testimonial {
+        flex: 0 0 90%;
+        width: 90%;
+        max-width: 360px;
+        min-height: 300px;
+        padding: 34px 30px 30px;
+        scroll-snap-align: center;
+      }
+      .tcarousel { position: relative; }
+      .tcarousel-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 3;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid rgba(15, 35, 66, 0.12);
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(4px);
+        box-shadow: 0 6px 18px rgba(15, 35, 66, 0.16);
+        color: var(--ink, #102342);
+        font-size: 1.5rem;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0 0 3px;
+      }
+      .tcarousel-prev { left: -2px; }
+      .tcarousel-next { right: -2px; }
+      .tcarousel-arrow:active { transform: translateY(-50%) scale(0.92); }
       .reason { min-height: auto; padding: 32px 24px; }
       .contact-panel { padding: 26px; }
       .contact-cards { grid-template-columns: 1fr; }
@@ -2034,6 +2156,7 @@
       /* Industry fan: at phone widths the side cards (±46%) fall off
          screen and overlap the centre card. Collapse the fan to a single
          centred card — the arrows/dots still page through them. */
+      .industries { padding-left: 16px; padding-right: 16px; }
       .industry-panel { padding: 28px 20px 32px; }
       .industry-stage { width: 100%; min-height: 380px; }
       .fan-card.is-left,

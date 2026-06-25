@@ -139,10 +139,9 @@
                 <img src="assets/logo/ChatGPT%20Image%20Jun%2022,%202026,%2003_35_02%20PM-Photoroom%20(1).png" alt="Senshin Marga logo">
               </a>
               <div class="hero-pills" id="heroMenu">
+                <a class="hero-pill" href="#top">Home</a>
                 <a class="hero-pill" href="about.html">About</a>
                 <a class="hero-pill" href="#services">Services</a>
-                <a class="hero-pill" href="#industries">Industries</a>
-                <a class="hero-pill" href="#why">Why Us</a>
                 <a class="hero-pill" href="#contact">Contact</a>
               </div>
             </div>
@@ -210,8 +209,8 @@
             <div class="hero-feat" data-anim="from-right">
               <img class="hero-feat-thumb" src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=200&q=80" alt="" aria-hidden="true">
               <div>
-                <strong>JLPT Preparation</strong>
-                <p>Disciplined exam preparation for learners who need structure and standards.</p>
+                <strong>Educational Exchange Programs</strong>
+                <p>Facilitating student and delegate exchange programs between Japanese and Indian universities.</p>
               </div>
             </div>
           </div>
@@ -221,12 +220,8 @@
       <section class="trust-bar" aria-label="Key facts">
         <div class="trust-inner reveal" data-stagger>
           <div class="trust-stat" data-anim="rise">
-            <div class="stat-label">Projects</div>
-            <div class="stat-num">500+</div>
-          </div>
-          <div class="trust-stat" data-anim="rise">
             <div class="stat-label">Certified Interpreters</div>
-            <div class="stat-num">N1</div>
+            <div class="stat-num">N1/N2/N3</div>
           </div>
           <div class="trust-stat" data-anim="rise">
             <div class="stat-label">Coverage</div>
@@ -234,7 +229,7 @@
           </div>
           <div class="trust-stat" data-anim="rise">
             <div class="stat-label">Experience</div>
-            <div class="stat-num">8+ Years</div>
+            <div class="stat-num">11+ Years</div>
           </div>
         </div>
       </section>
@@ -401,13 +396,13 @@
               </a>
             </article>
 
-            <!-- Text card, bottom: JLPT preparation -->
+            <!-- Text card, bottom: Educational Exchange Programs -->
             <article class="svc svc-text svc-7 reveal">
               <div class="svc-head">
-                <h3>JLPT Preparation</h3>
-                <p>Disciplined exam preparation for learners who need structure and standards — N5 through N1.</p>
+                <h3>Educational Exchange Programs</h3>
+                <p>Facilitating student and delegate exchange programs between Japanese and Indian universities.</p>
               </div>
-              <a class="svc-explore" href="#contact" aria-label="Explore JLPT Preparation">
+              <a class="svc-explore" href="#contact" aria-label="Explore Educational Exchange Programs">
                 <span class="arrow" aria-hidden="true">↗</span> Explore
               </a>
             </article>
@@ -872,6 +867,46 @@
       update();
     })();
 
+    // Industries section: smoothly wash the background from white to navy as
+    // the section scrolls up into the viewport, so the colour change feels
+    // continuous instead of snapping when the blue panel appears.
+    (function () {
+      const section = document.querySelector(".industries");
+      if (!section) return;
+
+      // Smootherstep easing so the change starts gently, accelerates, then
+      // settles — no abrupt onset, no hard stop.
+      const ease = (t) => t * t * t * (t * (t * 6 - 15) + 10);
+
+      let ticking = false;
+      function update() {
+        ticking = false;
+        const r = section.getBoundingClientRect();
+        const vh = window.innerHeight;
+        // Fill is driven by how centered the section is in the viewport, so it
+        // washes white -> navy as it scrolls in AND navy -> white as it scrolls
+        // out — the same smooth transition in both directions, on the way down
+        // and on the way back up.
+        const sectionCenter = r.top + r.height / 2;
+        const viewCenter = vh / 2;
+        // Distance of the section's centre from the viewport centre, normalised:
+        // 0 when perfectly centred (full navy), 1 when a full viewport away.
+        const dist = Math.abs(sectionCenter - viewCenter) / vh;
+        // Keep it fully navy through a centred band, then ease back to white.
+        const band = 0.35;        // +/- range that stays full navy
+        const fade = 0.45;        // how far beyond the band the fade takes
+        const raw = (dist - band) / fade;
+        const t = 1 - Math.min(1, Math.max(0, raw));
+        section.style.setProperty("--fill", ease(t).toFixed(3));
+      }
+      function onScroll() {
+        if (!ticking) { ticking = true; requestAnimationFrame(update); }
+      }
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+      update();
+    })();
+
     // FAQ accordion
     document.querySelectorAll(".faq-q").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -907,10 +942,16 @@
         const left = (current - 1 + n) % n;
         const right = (current + 1) % n;
         cards.forEach((card, i) => {
-          let cls = "is-hidden";
+          let cls;
           if (i === current) cls = "is-center";
           else if (i === left) cls = "is-left";
           else if (i === right) cls = "is-right";
+          else {
+            // Hidden cards exit toward whichever side is shorter, so they
+            // slide off/on from the edges instead of popping at center.
+            const forward = (i - current + n) % n;      // steps to the right
+            cls = forward <= n / 2 ? "is-hidden-right" : "is-hidden-left";
+          }
           card.className = "fan-card industry-card " + cls;
         });
         dots.forEach((d, i) => d.classList.toggle("active", i === current));
@@ -948,5 +989,6 @@
       start();
     })();
   </script>
+  <script src="assets/testimonials.js" defer></script>
 </body>
 </html>

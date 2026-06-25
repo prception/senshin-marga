@@ -140,6 +140,27 @@
           C 0,0.0201 0.0125,0 0.028,0
           Z" />
       </clipPath>
+      <clipPath id="industryShape" clipPathUnits="objectBoundingBox">
+        <path d="
+          M 0.018,0
+          L 0.982,0
+          C 0.9919,0 1,0.0201 1,0.045
+          L 1,0.78
+          C 1,0.8049 0.9919,0.825 0.982,0.825
+          L 0.718,0.825
+          C 0.7081,0.825 0.7,0.8451 0.7,0.87
+          L 0.7,0.955
+          C 0.7,0.9799 0.6919,1 0.682,1
+          L 0.318,1
+          C 0.3081,1 0.3,0.9799 0.3,0.955
+          L 0.3,0.87
+          C 0.3,0.8451 0.2919,0.825 0.282,0.825
+          L 0.018,0.825
+          C 0.0081,0.825 0,0.8049 0,0.78
+          L 0,0.045
+          C 0,0.0201 0.0081,0 0.018,0
+          Z" />
+      </clipPath>
     </defs>
   </svg>
 
@@ -233,7 +254,7 @@
           </div>
           <div class="trust-stat" data-anim="rise">
             <div class="stat-label">Certification</div>
-            <div class="stat-num">N1</div>
+            <div class="stat-num">N1/N2/N3</div>
           </div>
           <div class="trust-stat" data-anim="rise">
             <div class="stat-label">Typical Turnaround</div>
@@ -735,6 +756,39 @@
       update();
     })();
 
+    // Industries section: smoothly wash the background from white to navy as
+    // the section scrolls up into the viewport, so the colour change feels
+    // continuous instead of snapping when the blue panel appears.
+    (function () {
+      const section = document.querySelector(".industries");
+      if (!section) return;
+
+      // Smootherstep easing so the change starts gently, accelerates, then
+      // settles — no abrupt onset, no hard stop.
+      const ease = (t) => t * t * t * (t * (t * 6 - 15) + 10);
+
+      let ticking = false;
+      function update() {
+        ticking = false;
+        const r = section.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const sectionCenter = r.top + r.height / 2;
+        const viewCenter = vh / 2;
+        const dist = Math.abs(sectionCenter - viewCenter) / vh;
+        const band = 0.35;
+        const fade = 0.45;
+        const raw = (dist - band) / fade;
+        const t = 1 - Math.min(1, Math.max(0, raw));
+        section.style.setProperty("--fill", ease(t).toFixed(3));
+      }
+      function onScroll() {
+        if (!ticking) { ticking = true; requestAnimationFrame(update); }
+      }
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+      update();
+    })();
+
     document.querySelectorAll(".faq-q").forEach((btn) => {
       btn.addEventListener("click", () => {
         const item = btn.parentElement;
@@ -763,8 +817,9 @@
       function render() {
         const left = (current - 1 + n) % n, right = (current + 1) % n;
         cards.forEach((card, i) => {
-          let cls = "is-hidden";
+          let cls;
           if (i === current) cls = "is-center"; else if (i === left) cls = "is-left"; else if (i === right) cls = "is-right";
+          else { const forward = (i - current + n) % n; cls = forward <= n / 2 ? "is-hidden-right" : "is-hidden-left"; }
           card.className = "fan-card industry-card " + cls;
         });
         dots.forEach((d, i) => d.classList.toggle("active", i === current));
@@ -783,5 +838,6 @@
       render(); start();
     })();
   </script>
+  <script src="assets/testimonials.js" defer></script>
 </body>
 </html>

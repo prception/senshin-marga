@@ -23,6 +23,9 @@
       --serif: "Cormorant Garamond", Georgia, serif;
       --sans: "Inter", Arial, sans-serif;
       --jp: "Noto Serif JP", "Yu Mincho", serif;
+      /* Single source of truth for body / paragraph copy size, used site-wide
+         so every section's body text matches. */
+      --body: 0.86rem;
     }
 
     * { box-sizing: border-box; }
@@ -279,7 +282,7 @@
       gap: 18px;
     }
 
-    .section-copy p { margin: 0; color: rgba(43, 43, 43, 0.78); }
+    .section-copy p { margin: 0; color: rgba(43, 43, 43, 0.78); font-size: var(--body); }
 
     .editorial-lines {
       display: grid;
@@ -438,7 +441,7 @@
       color: rgba(124, 54, 70, 0.44);
     }
 
-    .card p, .testimonial p { margin: 0; color: rgba(43, 43, 43, 0.74); }
+    .card p, .testimonial p { margin: 0; color: rgba(43, 43, 43, 0.74); font-size: var(--body); }
 
     .culture {
       min-height: 72vh;
@@ -509,7 +512,7 @@
       background: rgba(244, 220, 228, 0.55);
     }
 
-    .reason p { margin: 0; color: rgba(43, 43, 43, 0.73); font-size: 0.94rem; }
+    .reason p { margin: 0; color: rgba(43, 43, 43, 0.73); font-size: var(--body); }
 
     .testimonials { background: linear-gradient(180deg, var(--white), var(--paper)); }
 
@@ -794,8 +797,8 @@
             </article>
             <article class="card reveal">
               <span class="number">05</span>
-              <h3>JLPT Preparation</h3>
-              <p>Disciplined exam preparation for learners who need structure and standards.</p>
+              <h3>Educational Exchange Programs</h3>
+              <p>Facilitating student and delegate exchange programs between Japanese and Indian universities.</p>
             </article>
           </div>
         </div>
