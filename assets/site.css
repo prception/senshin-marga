@@ -1545,17 +1545,22 @@
       display: grid;
       align-content: start;
       gap: 12px;
-      padding-top: clamp(70px, 8vw, 104px);
+      padding-top: clamp(82px, 8vw, 116px);
     }
 
     /* large ghosted outline number behind the text */
     .step .step-num {
       position: absolute;
-      top: 0;
-      left: -2px;
+      /* offset the glyph down from the box top — Anton paints above its line
+         box, so top:0 clips the digit's crown. Keep a small positive left
+         inset: the text-stroke paints ~1px outside the glyph, so left:0 (or
+         negative) lets the stroke spill past the box and get clipped by the
+         page's overflow:hidden on narrow screens. */
+      top: 12px;
+      left: 3px;
       font-family: var(--display);
       font-size: clamp(4.5rem, 8vw, 7rem);
-      line-height: 0.8;
+      line-height: 1;
       color: transparent;
       -webkit-text-stroke: 2px rgba(124, 54, 70, 0.42);
       transition: color 0.4s ease, -webkit-text-stroke-color 0.4s ease;
@@ -1966,8 +1971,8 @@
       .why-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .section-head { display: grid; align-items: start; }
       .steps { grid-template-columns: 1fr; gap: clamp(28px, 6vw, 44px); }
-      .step { padding-top: 64px; }
-      .step .step-num { font-size: 4rem; }
+      .step { padding-top: 86px; }
+      .step .step-num { font-size: 4rem; top: 14px; }
 
       /* Hero: the SVG clip-path tabs are tuned for a wide card and look
          awkward when the card gets tall/narrow. Drop the clip-path and
@@ -1980,17 +1985,20 @@
         min-height: 100vh;
         min-height: 100svh;
         height: 100svh;
+        /* Clip the cover image to the card so it can't bleed past the bottom
+           edge and overlap the "Built for…" block in the section below. */
+        overflow: hidden;
       }
       .hero-card::before,
       .hero-card::after {
         -webkit-clip-path: none;
         clip-path: none;
         border-radius: 32px;
-        /* Pin the image layers to the largest viewport height so the cover
-           doesn't rescale ("zoom") as the browser toolbar shows/hides. */
+        /* Keep the image layers inside the card bounds. */
+        inset: 0;
         top: 0;
-        bottom: auto;
-        height: 100lvh;
+        bottom: 0;
+        height: auto;
       }
       /* Push the toolbar (logo, nav pills, CTA) further down from the top
          edge now that the card is full-height. */
@@ -2039,17 +2047,17 @@
         border-radius: 0;
         padding: 20px;
         margin-bottom: 0;
+        /* Clip the cover so it never spills below the card into the next
+           section ("Built for…"). */
+        overflow: hidden;
       }
-      /* Pin the image/overlay layers to the LARGEST viewport height (toolbar
-         hidden). They're already sized for the tallest state, so when the
-         browser toolbar slides away on scroll the cover image doesn't grow /
-         rescale — which is what reads as the image "zooming". */
       .hero-card::before,
       .hero-card::after {
         border-radius: 0;
+        inset: 0;
         top: 0;
-        bottom: auto;
-        height: 100lvh;
+        bottom: 0;
+        height: auto;
       }
       .hero-toolbar { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; padding-right: 0; margin-top: 0; }
       .hero-nav { flex-direction: row; align-items: center; gap: 12px; }
@@ -2170,6 +2178,44 @@
       .wa-float, .wa-float:hover { width: 46px; padding: 0; gap: 0; }
       .wa-float span, .wa-float:hover span { max-width: 0; opacity: 0; }
       .float-stack { bottom: 12px; right: 12px; }
+
+      /* ---- Footer (phones) ----
+         Intro spans the top, then the link groups sit in a clean 2-column
+         grid beneath it — 3 columns squeeze long labels like
+         "Interpretation" into the next column. Scale the tagline down and
+         let the legal text wrap so nothing gets clipped at the edge. */
+      footer { padding: 44px 24px 36px; }
+      footer .inner {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 34px 28px;
+        justify-content: stretch;
+      }
+      .footer-intro { grid-column: 1 / -1; max-width: none; }
+      .footer-intro p { font-size: 0.96rem; line-height: 1.6; }
+      .footer-logo { width: 92px; height: 92px; margin-bottom: 18px; }
+      .footer-logo img { height: 66px; }
+      .footer-col h4 { margin-bottom: 14px; font-size: 0.7rem; }
+      .footer-nav { gap: 13px; font-size: 0.98rem; }
+
+      .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-top: 44px;
+        gap: 0;
+      }
+      .footer-bottom .footer-tagline { font-size: 1.25rem; }
+      .footer-legal {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 22px;
+      }
+      .footer-bottom .footer-copy {
+        font-size: 0.66rem;
+        letter-spacing: 0.05em;
+        line-height: 1.5;
+      }
+      .footer-bottom .footer-credit { text-align: left; font-size: 0.8rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {

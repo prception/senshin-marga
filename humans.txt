@@ -2,7 +2,7 @@
 
 Company: Senshin Marga
 Tagline: Where Language Meets Culture.
-Contact: operations@miraisetu.in
+Contact: connect@senshinmarga.in
 Location: Bengaluru, Karnataka, India
 
 /* SITE */
