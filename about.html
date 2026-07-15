@@ -92,6 +92,20 @@
          so every section's body text matches. UI chrome (nav, buttons, labels,
          stats, headings, and the larger intro .lead) keep their own sizes. */
       --body: 0.86rem;
+      /* Shared max width for the hero card and every section aligned to it.
+         Raised on large desktops below so the hero image doesn't sit small
+         inside wide white margins. */
+      --page-max: 1480px;
+    }
+
+    /* Large desktops: grow the hero (and everything aligned to it) instead
+       of capping at 1480px. Height keeps the card's ~1.6:1 aspect so the
+       clip-path tabs render as designed. */
+    @media (min-width: 1720px) {
+      :root { --page-max: 1780px; }
+    }
+    @media (min-width: 2100px) {
+      :root { --page-max: 2040px; }
     }
 
     * { box-sizing: border-box; }
@@ -195,7 +209,7 @@
 
     .hero-card {
       position: relative;
-      width: min(1480px, 100%);
+      width: min(var(--page-max), 100%);
       margin: 0 auto;
       min-height: min(920px, 94vh);
       display: flex;
@@ -206,6 +220,20 @@
       isolation: isolate;
       color: var(--white);
       background: transparent;
+    }
+
+    /* Large desktops only (same range where --page-max grows, above): lock
+       the card to one fixed shape so the hero renders with identical
+       proportions — same white cutouts, same amount of white space — on
+       every bigger screen, exactly as it looks today on normal laptop/
+       desktop sizes. Height follows the card's width instead of the
+       viewport, so wider screens scale the whole composition up uniformly.
+       Below 1720px nothing changes from current behavior. */
+    @media (min-width: 1720px) {
+      .hero-card {
+        aspect-ratio: 1480 / 700;
+        min-height: 0;
+      }
     }
 
     /* The actual image shape, clipped with a flowing wavy bottom edge.
@@ -390,7 +418,7 @@
       /* same container width + horizontal padding as the hero card so the
          left column lines up with the hero card's left content edge and the
          feature list lines up with its right content edge */
-      width: min(1480px, 100%);
+      width: min(var(--page-max), 100%);
       margin: clamp(28px, 3.5vw, 52px) auto 0;
       padding: 0 clamp(22px, 3vw, 38px);
       display: grid;
@@ -571,7 +599,7 @@
          left edge matches "Built for…". The hero-foot sits inside .hero,
          which adds clamp(6px,1vw,12px) of its own padding; sections have no
          such wrapper, so we add that amount here to line the edges up. */
-      width: min(1480px, 100%);
+      width: min(var(--page-max), 100%);
       margin: 0 auto;
       padding: 0 calc(clamp(22px, 3vw, 38px) + clamp(6px, 1vw, 12px));
     }
@@ -965,7 +993,7 @@
     .footer-nav a:hover { color: var(--sakura); }
 
     .footer-bottom {
-      width: min(1480px, 100%);
+      width: min(var(--page-max), 100%);
       margin: 80px auto 0;
       padding: 0 calc(clamp(22px, 3vw, 38px) + clamp(6px, 1vw, 12px));
       display: flex;
@@ -1031,7 +1059,7 @@
     .trust-inner {
       /* match hero-foot container so the stats bar lines up with "Built for…"
          (+ the .hero wrapper padding the hero-foot inherits) */
-      width: min(1480px, 100%);
+      width: min(var(--page-max), 100%);
       margin: 0 auto;
       padding: 0 calc(clamp(22px, 3vw, 38px) + clamp(6px, 1vw, 12px));
       display: flex;
@@ -1078,7 +1106,7 @@
 
     .industry-panel {
       position: relative;
-      width: min(1480px, 100%);
+      width: min(var(--page-max), 100%);
       height: 100%;
       margin: 0 auto;
       display: flex;
@@ -2104,7 +2132,7 @@
 
     .about-hero-card {
       position: relative;
-      width: min(1480px, 100%);
+      width: min(var(--page-max), 100%);
       margin: 0 auto;
       min-height: min(560px, 70vh);
       display: grid;
@@ -2325,7 +2353,7 @@
   <div class="page">
     <main id="top">
       <header class="about-hero hero">
-        <div class="hero-toolbar" style="width:min(1480px,100%);margin:0 auto;">
+        <div class="hero-toolbar" style="width:min(var(--page-max),100%);margin:0 auto;">
           <div class="hero-nav">
             <a class="hero-brand" href="index.html" aria-label="Senshin Marga home">
               <img src="assets/logo/ChatGPT%20Image%20Jun%2022,%202026,%2003_35_02%20PM-Photoroom%20(1).png" alt="Senshin Marga logo">
