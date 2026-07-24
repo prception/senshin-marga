@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://prception.github.io/senshin-marga/sitemap.xml
+Sitemap: https://senshinmarga.in/sitemap.xml
