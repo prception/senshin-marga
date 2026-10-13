@@ -2405,3 +2405,16 @@
 
     .enquiry-foot .button:disabled { cursor: wait; opacity: 0.7; transform: none; }
     .enquiry-status[data-state="success"] { color: var(--navy); font-weight: 600; }
+
+    /* Join the Get in Touch panel and the enquiry panel into one card
+       (no gap; a single hairline divides them). */
+    .enquiry-panel {
+      margin-top: 0;
+      border-top: 0;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+    .contact-panel:has(+ .enquiry-panel) {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
