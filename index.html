@@ -639,19 +639,77 @@
             </div>
           </div>
 
-          <div class="contact-cta">
-            <h3>Ready to start?</h3>
-            <p>Tell us your requirement and get a free quote - no obligation.</p>
-            <div class="actions">
+          <div class="contact-cta" data-stagger>
+            <h3 data-anim="wipe">Ready to start?</h3>
+            <p data-anim="fade-up">Tell us your requirement and get a free quote - no obligation.</p>
+            <div class="actions" data-anim="fade-up">
               <a class="button" href="mailto:connect@senshinmarga.in?subject=Quote%20Request%20-%20Senshin%20Marga">Get a Free Quote</a>
               <a class="button secondary" href="https://wa.me/917994301664">WhatsApp Us Now</a>
             </div>
           </div>
         </div>
 
-        <div class="inner map-block reveal">
-          <p class="kicker">Location</p>
-          <h3>Based in Bengaluru - serving Japanese-facing businesses across India.</h3>
+        <div class="inner enquiry-panel reveal">
+          <div class="enquiry-head" data-stagger>
+            <p class="kicker" data-anim="fade-up">Send an Enquiry</p>
+            <h3 data-anim="wipe">Tell us about your requirement.</h3>
+            <p data-anim="fade-up">Share a few details and we'll come back with a tailored quote - usually within 2 hours.</p>
+            <ul class="enquiry-points" aria-label="What to expect" data-stagger>
+              <li data-anim="from-left"><span aria-hidden="true">01</span>Free, no-obligation quote</li>
+              <li data-anim="from-left"><span aria-hidden="true">02</span>N1-level Japanese specialists</li>
+              <li data-anim="from-left"><span aria-hidden="true">03</span>Serving businesses across India</li>
+            </ul>
+          </div>
+
+          <form class="enquiry-form" id="enquiry-form" novalidate>
+            <div class="field">
+              <label for="ef-name">Full name <span aria-hidden="true">*</span></label>
+              <input id="ef-name" name="name" type="text" autocomplete="name" placeholder="Your name" required>
+            </div>
+            <div class="field">
+              <label for="ef-company">Company</label>
+              <input id="ef-company" name="company" type="text" autocomplete="organization" placeholder="Company name">
+            </div>
+            <div class="field">
+              <label for="ef-email">Email <span aria-hidden="true">*</span></label>
+              <input id="ef-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required>
+            </div>
+            <div class="field">
+              <label for="ef-phone">Phone / WhatsApp</label>
+              <input id="ef-phone" name="phone" type="tel" autocomplete="tel" placeholder="+91">
+            </div>
+            <div class="field">
+              <label for="ef-service">Service needed <span aria-hidden="true">*</span></label>
+              <select id="ef-service" name="service" required>
+                <option value="" selected disabled>Select a service</option>
+                <option>Japanese Interpretation</option>
+                <option>Japanese Translation</option>
+                <option>Staffing &amp; Recruiting</option>
+                <option>Corporate Training</option>
+                <option>Cross-Cultural Consulting</option>
+                <option>Educational Exchange Programs</option>
+                <option>Business Facilitation</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="ef-location">City / Location</label>
+              <input id="ef-location" name="location" type="text" placeholder="e.g. Chennai, Bengaluru">
+            </div>
+            <div class="field is-wide">
+              <label for="ef-message">Your requirement <span aria-hidden="true">*</span></label>
+              <textarea id="ef-message" name="message" rows="5" placeholder="Dates, duration, document type, number of interpreters..." required></textarea>
+            </div>
+            <div class="enquiry-foot is-wide">
+              <p class="enquiry-status" role="status" aria-live="polite"></p>
+              <button class="button" type="submit">Send Enquiry</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="inner map-block reveal" data-stagger>
+          <p class="kicker" data-anim="fade-up">Location</p>
+          <h3 data-anim="wipe">Based in Bengaluru - serving Japanese-facing businesses across India.</h3>
           <div class="map-frame">
             <iframe
               title="Senshin Marga location - Bengaluru, Karnataka"
@@ -990,6 +1048,46 @@
 
       render();
       start();
+    })();
+  </script>
+  <script>
+    // Enquiry form: validate, then open a prefilled email (static site, no backend).
+    (() => {
+      const form = document.getElementById("enquiry-form");
+      if (!form) return;
+      const status = form.querySelector(".enquiry-status");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        let firstInvalid = null;
+        form.querySelectorAll("[required]").forEach((el) => {
+          const bad = !el.value.trim() || (el.type === "email" && !el.checkValidity());
+          el.closest(".field").classList.toggle("is-invalid", bad);
+          if (bad && !firstInvalid) firstInvalid = el;
+        });
+        if (firstInvalid) {
+          status.textContent = "Please fill in the highlighted fields.";
+          firstInvalid.focus();
+          return;
+        }
+        const d = Object.fromEntries(new FormData(form));
+        const body = [
+          `Name: ${d.name}`,
+          `Company: ${d.company || "-"}`,
+          `Email: ${d.email}`,
+          `Phone: ${d.phone || "-"}`,
+          `Service: ${d.service}`,
+          `Location: ${d.location || "-"}`,
+          "",
+          d.message
+        ].join("\n");
+        const subject = `Enquiry - ${d.service} - ${d.name}`;
+        window.location.href = `mailto:connect@senshinmarga.in?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        status.textContent = "Opening your email app - thank you, we'll be in touch shortly.";
+      });
+      form.addEventListener("input", (e) => {
+        const field = e.target.closest(".field");
+        if (field) field.classList.remove("is-invalid");
+      });
     })();
   </script>
   <script src="assets/testimonials.js" defer></script>
