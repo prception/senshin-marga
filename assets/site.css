@@ -2393,3 +2393,15 @@
       .enquiry-form { grid-template-columns: 1fr; padding: 20px; }
       .enquiry-foot { flex-direction: column-reverse; align-items: stretch; }
     }
+
+    /* Enquiry form: honeypot (hidden from people), submit + status states */
+    .enquiry-hp {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    .enquiry-foot .button:disabled { cursor: wait; opacity: 0.7; transform: none; }
+    .enquiry-status[data-state="success"] { color: var(--navy); font-weight: 600; }

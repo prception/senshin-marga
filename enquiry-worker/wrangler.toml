@@ -1,0 +1,11 @@
+name = "senshin-enquiry"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+[vars]
+# Sites allowed to post the form. Local dev (VS Code Live Server) included.
+ALLOWED_ORIGINS = "https://senshinmarga.in,https://www.senshinmarga.in,http://127.0.0.1:5502,http://localhost:5502"
+
+# Secret (not in this file): set it with
+#   npx wrangler secret put ZOHO_FLOW_WEBHOOK_URL
+# For local `wrangler dev`, put it in .dev.vars (git-ignored).

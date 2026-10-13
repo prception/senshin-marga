@@ -700,6 +700,10 @@
               <label for="ef-message">Your requirement <span aria-hidden="true">*</span></label>
               <textarea id="ef-message" name="message" rows="5" placeholder="Dates, duration, document type, number of interpreters..." required></textarea>
             </div>
+            <div class="enquiry-hp" aria-hidden="true">
+              <label for="ef-website">Leave this field empty</label>
+              <input id="ef-website" name="website" type="text" tabindex="-1" autocomplete="off">
+            </div>
             <div class="enquiry-foot is-wide">
               <p class="enquiry-status" role="status" aria-live="polite"></p>
               <button class="button" type="submit">Send Enquiry</button>
@@ -1051,42 +1055,141 @@
     })();
   </script>
   <script>
-    // Enquiry form: validate, then open a prefilled email (static site, no backend).
+    // Enquiry form: validate, then post to the enquiry relay (Cloudflare
+    // Worker in enquiry-worker/), which forwards to Zoho Flow -> Zoho Sheet.
+    // This URL is public by design; the Zoho webhook stays secret in the Worker.
     (() => {
+      const ENQUIRY_ENDPOINT = "";
+
       const form = document.getElementById("enquiry-form");
       if (!form) return;
       const status = form.querySelector(".enquiry-status");
-      form.addEventListener("submit", (e) => {
+      const button = form.querySelector('button[type="submit"]');
+      const buttonLabel = button.textContent;
+      const loadedAt = Date.now();
+      const LIMITS = { name: 100, company: 120, email: 160, phone: 30, location: 100, message: 3000 };
+      const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+      const PHONE_RE = /^[+()\-.\s\d]{6,30}$/;
+      let sending = false;
+
+      const setStatus = (text, state) => {
+        status.textContent = text;
+        status.dataset.state = state || "";
+      };
+
+      const validate = (d) => {
+        const errors = {};
+        if (!d.name) errors.name = true;
+        if (!EMAIL_RE.test(d.email)) errors.email = true;
+        if (d.phone && !PHONE_RE.test(d.phone)) errors.phone = true;
+        if (!d.service) errors.service = true;
+        if (d.message.length < 10) errors.message = true;
+        Object.keys(LIMITS).forEach((k) => { if (d[k].length > LIMITS[k]) errors[k] = true; });
+        return errors;
+      };
+
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (sending) return;
+
+        const raw = Object.fromEntries(new FormData(form));
+        const d = {};
+        ["name", "company", "email", "phone", "service", "location", "message"]
+          .forEach((k) => { d[k] = String(raw[k] || "").trim(); });
+
+        const errors = validate(d);
         let firstInvalid = null;
-        form.querySelectorAll("[required]").forEach((el) => {
-          const bad = !el.value.trim() || (el.type === "email" && !el.checkValidity());
-          el.closest(".field").classList.toggle("is-invalid", bad);
-          if (bad && !firstInvalid) firstInvalid = el;
+        form.querySelectorAll(".field").forEach((field) => {
+          const input = field.querySelector("input, select, textarea");
+          const bad = !!errors[input.name];
+          field.classList.toggle("is-invalid", bad);
+          input.setAttribute("aria-invalid", String(bad));
+          if (bad && !firstInvalid) firstInvalid = input;
         });
         if (firstInvalid) {
-          status.textContent = "Please fill in the highlighted fields.";
+          setStatus(errors.message && Object.keys(errors).length === 1
+            ? "Please add a little more detail about your requirement."
+            : "Please check the highlighted fields.", "error");
           firstInvalid.focus();
           return;
         }
-        const d = Object.fromEntries(new FormData(form));
-        const body = [
-          `Name: ${d.name}`,
-          `Company: ${d.company || "-"}`,
-          `Email: ${d.email}`,
-          `Phone: ${d.phone || "-"}`,
-          `Service: ${d.service}`,
-          `Location: ${d.location || "-"}`,
-          "",
-          d.message
-        ].join("\n");
-        const subject = `Enquiry - ${d.service} - ${d.name}`;
-        window.location.href = `mailto:connect@senshinmarga.in?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        status.textContent = "Opening your email app - thank you, we'll be in touch shortly.";
+
+        // Bots: honeypot filled in, or form submitted implausibly fast.
+        // Pretend success so they get no signal.
+        if (raw.website || Date.now() - loadedAt < 3000) {
+          form.reset();
+          setStatus("Thank you - your enquiry has been sent. We'll reply within 2 hours.", "success");
+          return;
+        }
+
+        // Duplicate guard: the same enquiry can't be resent in this session.
+        const signature = [d.email, d.service, d.message].join("|").toLowerCase();
+        let lastSent = null;
+        try { lastSent = sessionStorage.getItem("sm-enquiry-sent"); } catch (_) {}
+        if (lastSent === signature) {
+          setStatus("We've already received this enquiry - we'll be in touch shortly.", "success");
+          return;
+        }
+
+        if (!ENQUIRY_ENDPOINT) {
+          console.error("Enquiry form: ENQUIRY_ENDPOINT is not set.");
+          setStatus("Sorry, the form is temporarily unavailable. Please WhatsApp us on +91 79943 01664.", "error");
+          return;
+        }
+
+        sending = true;
+        button.disabled = true;
+        button.textContent = "Sending...";
+        form.setAttribute("aria-busy", "true");
+        setStatus("", "");
+
+        const payload = JSON.stringify({ ...d, website: raw.website || "", page: location.href });
+
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 15000);
+        try {
+          // Success is shown only when the Worker confirms Zoho accepted it.
+          const res = await fetch(ENQUIRY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: payload,
+            signal: controller.signal
+          });
+          const result = await res.json().catch(() => ({}));
+          if (!res.ok || !result.ok) {
+            const err = new Error(result.error || `HTTP ${res.status}`);
+            err.fields = result.fields;
+            throw err;
+          }
+          try { sessionStorage.setItem("sm-enquiry-sent", signature); } catch (_) {}
+          form.reset();
+          setStatus("Thank you - your enquiry has been sent. We'll reply within 2 hours.", "success");
+        } catch (err) {
+          console.error("Enquiry form: submission failed", err);
+          if (err.fields && err.fields.length) {
+            err.fields.forEach((name) => {
+              const input = form.elements[name];
+              if (input && input.closest(".field")) input.closest(".field").classList.add("is-invalid");
+            });
+            setStatus("Please check the highlighted fields.", "error");
+            return;
+          }
+          setStatus("Sorry, something went wrong. Please try again, or WhatsApp us on +91 79943 01664.", "error");
+        } finally {
+          clearTimeout(timer);
+          sending = false;
+          button.disabled = false;
+          button.textContent = buttonLabel;
+          form.removeAttribute("aria-busy");
+        }
       });
+
       form.addEventListener("input", (e) => {
         const field = e.target.closest(".field");
-        if (field) field.classList.remove("is-invalid");
+        if (field) {
+          field.classList.remove("is-invalid");
+          e.target.removeAttribute("aria-invalid");
+        }
       });
     })();
   </script>
