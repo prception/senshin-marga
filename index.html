@@ -1059,7 +1059,7 @@
     // Worker in enquiry-worker/), which forwards to Zoho Flow -> Zoho Sheet.
     // This URL is public by design; the Zoho webhook stays secret in the Worker.
     (() => {
-      const ENQUIRY_ENDPOINT = "";
+      const ENQUIRY_ENDPOINT = "https://senshin-enquiry.connect-d59.workers.dev";
 
       const form = document.getElementById("enquiry-form");
       if (!form) return;
